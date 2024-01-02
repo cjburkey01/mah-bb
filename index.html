@@ -30,8 +30,13 @@
                 font-size: 1.5rem;
             }
 
-            #options_dialog .padded {
+            .padded {
                 padding: 0.75rem;
+            }
+
+            /*noinspection CssUnusedSymbol*/
+            .cell {
+                aspect-ratio: 1/1;
             }
         </style>
     </head>
@@ -45,98 +50,7 @@
                     <option value="15">15x15</option>
                     <option value="20">20x20</option>
                 </select>
-                <button class="padded" _="on click send game_start to <body/>">Start game</button>
-            </div>
-            <div id="game_container" style="display: none;">
-                <!-- Prototype -->
-                <!--
-                    X   1   1       <- First row|
-                    | 0 2 1 2 0     <-----------+
-                    -+----------   <-+
-                  1 1|• # • # •      |
-                    0|• • • • •      +- Second row
-                  1 1|• # • # •      |
-                    3|• # # # •      |
-                    0|• • • • •    <-+
-    First Column -^-^ ^-----+--^
-                            |-Second column
-                -->
-                <div id="game_board" style="display: grid; grid-template-columns: 4rem 10rem;">
-                    <!-- Remember to only use the second column in the first row -->
-                    <div id="board_spacer"></div>
-                    <div class="board_top_row_columns" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; text-align: center;">
-                        <span class="column_count" data-col="0" data-index="2"></span>
-                        <span class="column_count" data-col="1" data-index="2"></span>
-                        <span class="column_count" data-col="2" data-index="2"></span>
-                        <span class="column_count" data-col="3" data-index="2"></span>
-                        <span class="column_count" data-col="4" data-index="2"></span>
-
-                        <span class="column_count" data-col="0" data-index="1"></span>
-                        <span class="column_count" data-col="1" data-index="1">1</span>
-                        <span class="column_count" data-col="3" data-index="1"></span>
-                        <span class="column_count" data-col="2" data-index="1">1</span>
-                        <span class="column_count" data-col="4" data-index="1"></span>
-
-                        <span class="column_count" data-col="0" data-index="0">0</span>
-                        <span class="column_count" data-col="1" data-index="0">2</span>
-                        <span class="column_count" data-col="2" data-index="0">1</span>
-                        <span class="column_count" data-col="3" data-index="0">2</span>
-                        <span class="column_count" data-col="4" data-index="0">0</span>
-                    </div>
-                    <div class="board_left_column_rows" style="display: grid; grid-template-columns: 1fr 1fr 1fr; text-align: center; align-items: center;">
-                        <span class="column_count" data-row="0" data-index="2"></span>
-                        <span class="column_count" data-row="0" data-index="1">1</span>
-                        <span class="column_count" data-row="0" data-index="0">1</span>
-
-                        <span class="column_count" data-row="1" data-index="2"></span>
-                        <span class="column_count" data-row="1" data-index="1"></span>
-                        <span class="column_count" data-row="1" data-index="0">0</span>
-
-                        <span class="column_count" data-row="2" data-index="2"></span>
-                        <span class="column_count" data-row="2" data-index="1">1</span>
-                        <span class="column_count" data-row="2" data-index="0">1</span>
-
-                        <span class="column_count" data-row="3" data-index="2"></span>
-                        <span class="column_count" data-row="3" data-index="1"></span>
-                        <span class="column_count" data-row="3" data-index="0">3</span>
-
-                        <span class="column_count" data-row="4" data-index="2"></span>
-                        <span class="column_count" data-row="4" data-index="1"></span>
-                        <span class="column_count" data-row="4" data-index="0">0</span>
-                    </div>
-                    <div id="board_grid" style="display: grid; background-color: #AAAAAA; border: 2px solid #AAAAAA; gap: 2px; grid-template-columns: 1fr 1fr 1fr 1fr 1fr;">
-                        <!-- 25 grid cells -->
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="0"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: black;" data-index="1"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="2"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: black;" data-index="3"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="4"></div>
-
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="5"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="6"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="7"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="8"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="9"></div>
-
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="10"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: black;" data-index="11"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="12"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: black;" data-index="13"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="14"></div>
-
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="15"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: black;" data-index="16"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: black;" data-index="17"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: black;" data-index="18"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="19"></div>
-
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="20"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="21"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="22"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="23"></div>
-                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="24"></div>
-                    </div>
-                </div>
+                <button id="start_btn" class="padded" _="on click add @disabled then send game_start to <body/>">Start game</button>
             </div>
         </div>
 
@@ -153,8 +67,86 @@
             -- Handle game start
             on game_start
                 -- Hide options dialog and show game board
-                hide <#options_dialog/>
-                show <#game_container/>
+                hide #options_dialog
+
+                -- Create the grid
+                set size to the value of #size_select
+                set game_container to create_game_board(size)
+                if game_container exists
+                    put game_container at the end of #wrapper
+                end
+            end
+
+            on game_exit
+                if #game_container exists
+                    remove #game_container
+                end
+                set the *display of #options_dialog to 'flex'
+                remove @disabled from #start_btn
+            end
+        </script>
+
+        <script type="text/hyperscript">
+            def create_game_board(size)
+                -- EW EW EW
+                if size != 10 and size != 15 and size != 20
+                    call alert('You sneaky devil, only sizes 10, 15, and 20 are allowed.')
+                    send game_exit to <body/>
+                    exit
+                end
+
+                set half_size to Math.ceil(size / 2.0)
+
+                -- Create game container
+                make a <div#game_container/> called game_container
+
+                -- Create the return to menu button
+                make a <button.padded/> then put it into game_container
+                put 'Return to Menu' into it
+                set its @_ to 'on click send game_exit to <body/>'
+
+                -- Create the game board wrapping div
+                make a <div#game_board/> called game_board then put it at the end of game_container
+                set its @style to `display: grid; grid-template-columns: ${half_size + 1}rem ${size * 2}rem;`
+
+                -- Spacer
+                make a <div/> then put it into game_board
+
+                -- Top row column labels
+                make a <div#board_top_row_columns/> called top_row then put it at the end of game_board
+                set its @style to `display: grid; grid-template-columns: repeat(${size}, 1fr); text-align: center;`
+                repeat half_size times index i
+                    set ind to half_size - 1 - i
+                    repeat size times index column
+                        make a <span.column_count/> then put it at the end of top_row
+                        set its @data-col to column
+                        set its @data-index to ind
+                    end
+                end
+
+                -- Left column row labels
+                make a <div#board_left_column_rows/> called left_col then put it at the end of game_board
+                set its @style to `display: grid; grid-template-columns: repeat(${half_size}, 1fr); text-align: center; align-items: center;`
+                repeat size times index row
+                    repeat half_size times index i
+                        set ind to half_size - 1 - i
+                        make a <span.column_count/> then put it at the end of left_col
+                        set its @data-row to row
+                        set its @data-index to ind
+                    end
+                end
+
+                -- Board tiles
+                make a <div#board_grid/> called board_grid_div then put it at the end of game_board
+                set its @style to `display: grid; background-color: #AAAAAA; border: 2px solid #AAAAAA; gap: 2px; grid-template-columns: repeat(${size}, 1fr);`
+                repeat (size * size) times index i
+                    make a <div.cell/> then put it at the end of board_grid_div
+                    set its @style to `background-color: white;`
+                    set its @data-index to i
+                end
+
+                return game_container
+            end
         </script>
     </body>
 </html>
