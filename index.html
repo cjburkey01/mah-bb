@@ -52,6 +52,9 @@
                 </select>
                 <button id="start_btn" class="padded" _="on click add @disabled then send game_start to <body/>">Start game</button>
             </div>
+            <div id="loading_dialog" style="display: none;">
+                <h3>Your experience awaits...</h3>
+            </div>
         </div>
 
         <!--
@@ -68,15 +71,33 @@
             on game_start
                 -- Hide options dialog and show game board
                 hide #options_dialog
+                show #loading_dialog
+
+                -- Get the board information
+                set size to the value of #size_select
+                fetch `https://cjburkey.com/mah-bb/api.php?size=${size}` as json
+                set game_api_result to the result
+                set error to game_api_result['error']
+                set api_res to game_api_result['success']
+
+                if error exists or not (api_res exists)
+                    call alert(`An error occurred!\n${error}`)
+                    send game_exit to me
+                    exit
+                end
+
+                -- TODO: DO SOMETHING WITH THIS
 
                 -- Create the grid
-                set size to the value of #size_select
-                set game_container to create_game_board(size)
+                set game_container to create_game_board(size, rows)
                 if game_container exists
                     put game_container at the end of #wrapper
                 end
+            finally
+                hide #loading_dialog
             end
 
+            -- Handle returning to main menu
             on game_exit
                 if #game_container exists
                     remove #game_container
@@ -86,8 +107,9 @@
             end
         </script>
 
+        <!-- Board creation -->
         <script type="text/hyperscript">
-            def create_game_board(size)
+            def create_game_board(size, rows)
                 -- EW EW EW
                 if size != 10 and size != 15 and size != 20
                     call alert('You sneaky devil, only sizes 10, 15, and 20 are allowed.')
