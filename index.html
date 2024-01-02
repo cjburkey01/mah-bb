@@ -1,2 +1,160 @@
 <!DOCTYPE html>
-<html lang="en"></html>
+<html lang="en">
+    <!--
+        Hello world!
+        I love you Jadie!
+    -->
+    <head>
+        <meta charset="UTF-8">
+        <meta name="author" content="CJ Burkey">
+        <meta name="description" content="My wife's favorite game, with her favorite things">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>Mah BB</title>
+
+        <style>
+            #options_dialog > * {
+                font-size: 1.1rem;
+                margin: 0;
+                padding: 0;
+            }
+
+            #options_dialog {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                width: 10rem;
+            }
+
+            #options_dialog label {
+                font-size: 1.5rem;
+            }
+
+            #options_dialog .padded {
+                padding: 0.75rem;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Mah BB</h1>
+        <div id="wrapper">
+            <div id="options_dialog">
+                <label for="size_select">Size</label>
+                <select id="size_select" class="padded">
+                    <option value="10">10x10</option>
+                    <option value="15">15x15</option>
+                    <option value="20">20x20</option>
+                </select>
+                <button class="padded" _="on click send game_start to <body/>">Start game</button>
+            </div>
+            <div id="game_container" style="display: none;">
+                <!-- Prototype -->
+                <!--
+                    X   1   1       <- First row|
+                    | 0 2 1 2 0     <-----------+
+                    -+----------   <-+
+                  1 1|• # • # •      |
+                    0|• • • • •      +- Second row
+                  1 1|• # • # •      |
+                    3|• # # # •      |
+                    0|• • • • •    <-+
+    First Column -^-^ ^-----+--^
+                            |-Second column
+                -->
+                <div id="game_board" style="display: grid; grid-template-columns: 4rem 10rem;">
+                    <!-- Remember to only use the second column in the first row -->
+                    <div id="board_spacer"></div>
+                    <div class="board_top_row_columns" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; text-align: center;">
+                        <span class="column_count" data-col="0" data-index="2"></span>
+                        <span class="column_count" data-col="1" data-index="2"></span>
+                        <span class="column_count" data-col="2" data-index="2"></span>
+                        <span class="column_count" data-col="3" data-index="2"></span>
+                        <span class="column_count" data-col="4" data-index="2"></span>
+
+                        <span class="column_count" data-col="0" data-index="1"></span>
+                        <span class="column_count" data-col="1" data-index="1">1</span>
+                        <span class="column_count" data-col="3" data-index="1"></span>
+                        <span class="column_count" data-col="2" data-index="1">1</span>
+                        <span class="column_count" data-col="4" data-index="1"></span>
+
+                        <span class="column_count" data-col="0" data-index="0">0</span>
+                        <span class="column_count" data-col="1" data-index="0">2</span>
+                        <span class="column_count" data-col="2" data-index="0">1</span>
+                        <span class="column_count" data-col="3" data-index="0">2</span>
+                        <span class="column_count" data-col="4" data-index="0">0</span>
+                    </div>
+                    <div class="board_left_column_rows" style="display: grid; grid-template-columns: 1fr 1fr 1fr; text-align: center; align-items: center;">
+                        <span class="column_count" data-row="0" data-index="2"></span>
+                        <span class="column_count" data-row="0" data-index="1">1</span>
+                        <span class="column_count" data-row="0" data-index="0">1</span>
+
+                        <span class="column_count" data-row="1" data-index="2"></span>
+                        <span class="column_count" data-row="1" data-index="1"></span>
+                        <span class="column_count" data-row="1" data-index="0">0</span>
+
+                        <span class="column_count" data-row="2" data-index="2"></span>
+                        <span class="column_count" data-row="2" data-index="1">1</span>
+                        <span class="column_count" data-row="2" data-index="0">1</span>
+
+                        <span class="column_count" data-row="3" data-index="2"></span>
+                        <span class="column_count" data-row="3" data-index="1"></span>
+                        <span class="column_count" data-row="3" data-index="0">3</span>
+
+                        <span class="column_count" data-row="4" data-index="2"></span>
+                        <span class="column_count" data-row="4" data-index="1"></span>
+                        <span class="column_count" data-row="4" data-index="0">0</span>
+                    </div>
+                    <div id="board_grid" style="display: grid; background-color: #AAAAAA; border: 2px solid #AAAAAA; gap: 2px; grid-template-columns: 1fr 1fr 1fr 1fr 1fr;">
+                        <!-- 25 grid cells -->
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="0"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: black;" data-index="1"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="2"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: black;" data-index="3"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="4"></div>
+
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="5"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="6"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="7"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="8"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="9"></div>
+
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="10"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: black;" data-index="11"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="12"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: black;" data-index="13"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="14"></div>
+
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="15"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: black;" data-index="16"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: black;" data-index="17"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: black;" data-index="18"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="19"></div>
+
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="20"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="21"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="22"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="23"></div>
+                        <div class="cell" style="aspect-ratio: 1/1; background-color: white;" data-index="24"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--
+            Using un-minified version for debugging (I think).
+            Honestly it probably doesn't matter much in the end, but when
+            not in development mode, I should eventually change this.
+            Also, remember to keep this up-to-date when necessary.
+        -->
+        <script src="https://unpkg.com/hyperscript.org@0.9.12/dist/_hyperscript.js"></script>
+
+        <!-- Game event handling -->
+        <script type="text/hyperscript">
+            -- Handle game start
+            on game_start
+                -- Hide options dialog and show game board
+                hide <#options_dialog/>
+                show <#game_container/>
+        </script>
+    </body>
+</html>
