@@ -46,6 +46,7 @@
 
             #game_board {
                 display: grid;
+                grid-template-columns: auto auto;
             }
 
             #board_top_row_columns {
@@ -188,7 +189,6 @@
 
                 -- Create the game board wrapping div
                 make a <div#game_board/> called game_board then put it at the end of game_container
-                set its *grid-template-columns to `auto auto`
 
                 -- Spacer
                 make a <div/> then put it into game_board
@@ -197,12 +197,13 @@
                 make a <div#board_top_row_columns/> called top_row then put it at the end of game_board
                 set its @style to `grid-template-columns: repeat(${size}, 2em);`
                 repeat half_size times index i
-                    set ind to half_size - 1 - i
                     repeat size times index column
-                        make a <div.count_label/> then put it at the end of top_row
-                        put 1 into it
-                        set its @data-col to column
-                        set its @data-index to ind
+                        set col_counts to api_values["col_counts"][column]
+                        set diff to half_size - col_counts.length
+                        make a <div.count_label/> called label_at then put it at the end of top_row
+                        if i >= diff
+                            put col_counts[i - diff] into label_at
+                        end
                     end
                 end
 
@@ -210,14 +211,13 @@
                 make a <div#board_left_column_rows/> called left_col then put it at the end of game_board
                 set its @style to `grid-template-columns: repeat(${half_size}, 2em);`
                 repeat size times index row
+                    set row_counts to api_values["row_counts"][row]
+                    set diff to half_size - row_counts.length
                     repeat half_size times index i
-                        set ind to half_size - 1 - i
                         make a <div.count_label/> called label_at then put it at the end of left_col
-                        if ind < api_values["row_counts"][row].length
-                            put api_values["row_counts"][row][ind] into label_at
+                        if i >= diff
+                            put row_counts[i - diff] into label_at
                         end
-                        set its @data-row to row
-                        set its @data-index to ind
                     end
                 end
 
