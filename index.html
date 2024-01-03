@@ -18,11 +18,20 @@
                 display: flex;
                 flex-direction: column;
                 gap: 1rem;
-                width: 10rem;
+                padding: 1rem;
+                width: 30rem;
             }
 
             #options_dialog label {
-                font-size: 1.5rem;
+                font-size: 1rem;
+                text-align: right;
+            }
+
+            .input_group {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+                align-items: center;
             }
 
             html, body, #wrapper {
@@ -115,12 +124,20 @@
         <h1>Mah BB</h1>
         <div id="wrapper">
             <div id="options_dialog" style="display: none;" _="on load remove @style from me">
-                <label for="size_select">Size</label>
-                <select id="size_select" class="padded">
-                    <option value="10">10x10</option>
-                    <option value="15">15x15</option>
-                    <option value="20">20x20</option>
-                </select>
+                <div class="input_group">
+                        <label for="size_select">Size:</label>
+                        <select id="size_select">
+                            <option value="10">10x10</option>
+                            <option value="15" selected>15x15</option>
+                            <option value="20">20x20</option>
+                            <option value="25">25x25</option>
+                            <option value="30">30x30</option>
+                        </select>
+
+                        <label for="url_select">Image URL:</label>
+                        <input type="url" id="url_select" value="https://i.imgur.com/UniMfif.png">
+                </div>
+
                 <button id="start_btn" class="padded" _="on click add @disabled then send game_start to <body/>">Start game</button>
             </div>
             <div id="loading_dialog" _="on load hide me">
@@ -159,7 +176,20 @@
                     remove #game_container
                 end
                 set the *display of #options_dialog to 'flex'
+                hide #loading_dialog
                 remove @disabled from #start_btn
+            end
+
+            -- Called by the _ attribute on each cell with the reference to itself
+            def cell_toggle(cell)
+                if cell's @data-black
+                    remove @data-black from cell
+                    set cell's @data-cross to true
+                else if cell's @data-cross
+                    remove @data-cross from cell
+                else
+                    set cell's @data-black to true
+                end
             end
         </script>
 
@@ -167,14 +197,18 @@
         <script type="text/hyperscript">
             def create_game_board(size, rows)
                 -- EW EW EW
-                if size != 10 and size != 15 and size != 20
-                    call alert('You sneaky devil, only sizes 10, 15, and 20 are allowed.')
+                if size mod 5 != 0 or size < 10 or size > 30
+                    call alert('You sneaky devil, only sizes from 10-30 are allowed.')
                     send game_exit to <body/>
                     exit
                 end
 
                 -- Make the api call
                 set api_values to make_api_request(size)
+                if not api_values
+                    send game_exit to <body/>
+                    exit
+                end
 
                 set half_size to Math.ceil(size / 2.0)
 
@@ -230,8 +264,21 @@
                     set col to i mod size
                     set cell's @data-row to row
                     set cell's @data-col to col
-                    set cell's @_ to `on click call cell_toggle(${row}, ${col}, me)`
+                    set cell's @_ to `on click call cell_toggle(me)`
                     set cell's *display to 'flex'
+
+                    set col_mod to col mod 5
+                    set row_mod to row mod 5
+                    if col_mod is 4
+                        set cell's *border-right to '1px solid black'
+                    else if col_mod is 0
+                        set cell's *border-left to '1px solid black'
+                    end
+                    if row_mod is 4
+                        set cell's *border-bottom to '1px solid black'
+                    else if row_mod is 0
+                        set cell's *border-top to '1px solid black'
+                    end
 
                     make a <span/> called sp then put it into cell
                     put 'X' into sp
@@ -240,26 +287,18 @@
                 return game_container
             end
 
-            def cell_toggle(row, col, cell)
-                if cell's @data-black
-                    remove @data-black from cell
-                    set cell's @data-cross to true
-                else if cell's @data-cross
-                    remove @data-cross from cell
-                else
-                    set cell's @data-black to true
-                end
-            end
-
             def make_api_request(size)
-                fetch `https://cjburkey.com/mah-bb/api.php?size=${size}` as json
+                set safe_url to encodeURIComponent(the value of #url_select)
+                set request to `https://cjburkey.com/mah-bb/api.php?size=${size}&url=${safe_url}`
+                log `make request to: ${request}`
+
+                fetch `${request}` as json
                 set game_api_result to the result
                 set error to game_api_result['error']
                 set api_res to game_api_result['success']
 
                 if error exists or not (api_res exists)
                     call alert(`An error occurred!\n${error}`)
-                    send game_exit to <body/>
                     exit
                 end
 
