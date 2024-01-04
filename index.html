@@ -14,40 +14,74 @@
 
         <!--suppress CssUnusedSymbol -->
         <style>
+            html, body {
+                padding: 0;
+                margin: 0;
+            }
+
+            body {
+                min-width: 100%;
+                width: max-content;
+            }
+
+            #wrapper {
+                text-align: center;
+                font-family: 'Arial', sans-serif;
+                padding: 1rem;
+                margin: 1rem;
+            }
+
+            #wrapper > h1 {
+                padding: 0;
+                margin: 0 0 1.0rem;
+            }
+
+            #wrapper > div {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
             #options_dialog {
                 display: flex;
                 flex-direction: column;
+                max-width: 36rem;
                 gap: 1rem;
-                padding: 1rem;
-                width: 30rem;
-            }
-
-            #options_dialog label {
-                font-size: 1rem;
-                text-align: right;
             }
 
             .input_group {
                 display: grid;
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: 10rem auto;
                 gap: 1rem;
                 align-items: center;
             }
 
-            html, body, #wrapper {
-                width: max-content;
-                font-family: 'Arial', sans-serif;
+            .input_group label {
+                font-size: 1rem;
+                text-align: right;
             }
 
-            #wrapper {
-                overflow: hidden;
+            /* Pretty much the only responsive part we really need ¯\_(ツ)_/¯ */
+            @media (max-width: 400px) {
+                .input_group label {
+                    font-size: 1rem;
+                    text-align: center;
+                }
+
+                /* Hack to add extra space between elements in here */
+                .input_group > label:not(:nth-child(1)) {
+                    margin-top: 1rem;
+                }
+
+                .input_group {
+                    grid-template-columns: auto;
+                    gap: 0.5rem;
+                }
             }
 
             #game_container {
                 display: flex;
                 flex-direction: column;
                 gap: 1rem;
-                margin: 1rem;
                 padding: 1rem;
                 border: 1px solid black;
                 width: max-content;
@@ -121,10 +155,11 @@
         </style>
     </head>
     <body>
-        <h1>Mah BB</h1>
         <div id="wrapper">
+            <h1>Mah BB</h1>
             <div id="options_dialog" style="display: none;" _="on load remove @style from me">
                 <div class="input_group">
+                    <!-- Save -->
                     <label for="size_select">Size:</label>
                     <select id="size_select">
                         <option value="10">10x10</option>
@@ -134,11 +169,12 @@
                         <option value="30">30x30</option>
                     </select>
 
+                    <!-- Image URL -->
                     <label for="url_select">Image URL:</label>
-                    <input type="url" id="url_select" value="https://i.imgur.com/UniMfif.png">
+                    <input type="url" id="url_select" placeholder="https://" value="https://i.imgur.com/UniMfif.png">
                 </div>
 
-                <button id="start_btn" class="padded" _="on click add @disabled then send game_start to <body/>">Start game</button>
+                <button id="start_btn" class="padded" _="on click add @disabled then add @disabled to #size_select then send game_start to <body/>">Start game</button>
             </div>
             <div id="loading_dialog" _="on load hide me">
                 <h3>Your experience awaits...</h3>
@@ -178,9 +214,10 @@
                 set the *display of #options_dialog to 'flex'
                 hide #loading_dialog
                 remove @disabled from #start_btn
+                remove @disabled from #size_select
             end
 
-            -- Called by the _ attribute on each cell with the reference to itself
+            -- Called by the _hyperscript attribute on each cell
             def cell_toggle(cell)
                 if cell's @data-black
                     remove @data-black from cell
@@ -190,6 +227,22 @@
                 else
                     set cell's @data-black to true
                 end
+
+                -- TODO: DON'T DO THIS EVERY CHANGE?
+                --       Just check for completions in the row & col
+                check_board()
+            end
+
+            def check_board()
+                -- I feel like I can do better than this lmfao
+                -- Like using HTML state to store data?
+                -- I would never
+                --             (I would, and am bc there's no reason to cheat)
+
+                -- query test
+                -- log the innerText of <.count_label[data-row="6"]/>
+                -- this works, returns an array of run lengths within the given row
+                -- will also work for data-col to find run lengths in a given col
             end
         </script>
 
@@ -210,15 +263,12 @@
                     exit
                 end
 
-                set half_size to Math.ceil(size / 2.0)
-
                 -- Create game container
                 make a <div#game_container/> called game_container
 
                 -- Create the return to menu button
                 make a <button.padded/> then put it into game_container
                 put 'Return to Menu' into it
-                -- It's meta bro
                 set its @_ to 'on click send game_exit to <body/>'
 
                 -- Create the game board wrapping div
@@ -227,30 +277,50 @@
                 -- Spacer
                 make a <div/> then put it into game_board
 
+                set half_size to Math.ceil(size / 2.0)
+
                 -- Top row column labels
                 make a <div#board_top_row_columns/> called top_row then put it at the end of game_board
                 set its @style to `grid-template-columns: repeat(${size}, 2em);`
-                repeat half_size times index i
+                set max_col_nums to 0
+                repeat for val in api_values["col_counts"]
+                    if val.length > max_col_nums
+                        set max_col_nums to val.length
+                    end
+                end
+                repeat max_col_nums times index i
                     repeat size times index column
                         set col_counts to api_values["col_counts"][column]
-                        set diff to half_size - col_counts.length
+                        set diff to max_col_nums - col_counts.length
                         make a <div.count_label/> called label_at then put it at the end of top_row
                         if i >= diff
+                            set index to i - diff
                             put col_counts[i - diff] into label_at
+                            set label_at's @data-index to index
+                            set label_at's @data-col to column
                         end
                     end
                 end
 
                 -- Left column row labels
+                set max_row_nums to 0
+                repeat for val in api_values["row_counts"]
+                    if val.length > max_row_nums
+                        set max_row_nums to val.length
+                    end
+                end
                 make a <div#board_left_column_rows/> called left_col then put it at the end of game_board
-                set its @style to `grid-template-columns: repeat(${half_size}, 2em);`
+                set its @style to `grid-template-columns: repeat(${max_row_nums}, 2em);`
                 repeat size times index row
                     set row_counts to api_values["row_counts"][row]
-                    set diff to half_size - row_counts.length
-                    repeat half_size times index i
+                    set diff to max_row_nums - row_counts.length
+                    repeat max_row_nums times index i
                         make a <div.count_label/> called label_at then put it at the end of left_col
                         if i >= diff
-                            put row_counts[i - diff] into label_at
+                            set index to i - diff
+                            put row_counts[index] into label_at
+                            set label_at's @data-index to index
+                            set label_at's @data-row to row
                         end
                     end
                 end
