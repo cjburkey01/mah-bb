@@ -111,6 +111,15 @@
                 background-color: #AAAAAA;
                 border: 2px solid #AAAAAA;
                 gap: 2px;
+                position: relative;
+            }
+
+            #board_grid > .overlay_image {
+                object-fit: contain;
+                position: absolute;
+                pointer-events: none;
+                width: 100%;
+                height: 100%;
             }
 
             .cell {
@@ -206,6 +215,11 @@
                 hide #loading_dialog
             end
 
+            on game_complete
+                show #final_image with opacity
+                set *pointer-events of #final_image to 'auto'
+            end
+
             -- Handle returning to main menu
             on game_exit
                 if #game_container exists
@@ -230,19 +244,65 @@
 
                 -- TODO: DON'T DO THIS EVERY CHANGE?
                 --       Just check for completions in the row & col
-                check_board()
+                send check_board to <body/>
             end
 
-            def check_board()
-                -- I feel like I can do better than this lmfao
-                -- Like using HTML state to store data?
-                -- I would never
-                --             (I would, and am bc there's no reason to cheat)
+            on check_board
+                -- Check if the row run counts match
+                set size to the value of #size_select
+                set valid to true
+                repeat size times index row
+                    set run to 0
+                    set runs to []
+                    repeat size times index col
+                        if @data-black of the first <.cell[data-row=`${row}`][data-col=`${col}`]/>
+                            increment run
+                        else
+                            if run > 0
+                                append run to runs
+                                set run to 0
+                            end
+                        end
+                    end
+                    if run > 0
+                        append run to runs
+                        set run to 0
+                    end
 
-                -- query test
-                -- log the innerText of <.count_label[data-row="6"]/>
-                -- this works, returns an array of run lengths within the given row
-                -- will also work for data-col to find run lengths in a given col
+                    set raw_expected_runs to <.count_label[data-row=`${row}`]/>
+                    set len to raw_expected_runs.length
+
+                    set expected_runs to []
+                    if len > 0
+                        repeat len times index i
+                            set run_count_at to the innerText of the first <.count_label[data-row=`${row}`][data-index=`${i}`]/>
+                            append run_count_at as Int to expected_runs
+                        end
+                    end
+
+                    if not compare_arrays(expected_runs, runs)
+                        log `mismatch on row ${row}`
+                        set valid to false
+                        break
+                    end
+                end
+
+                if valid
+                    log 'game complete'
+                    send game_complete to <body/>
+                end
+            end
+
+            def compare_arrays(arr1, arr2)
+                if arr1.length == arr2.length
+                    repeat for expected in arr1 index i
+                        if expected != arr2[i]
+                            return false
+                        end
+                    end
+                    return true
+                end
+                return false
             end
         </script>
 
@@ -354,7 +414,21 @@
                     put 'X' into sp
                 end
 
+                set final_image to create_final_image_element(size)
+                put final_image at the end of board_grid_div
+                hide final_image with opacity
+
                 return game_container
+            end
+
+            def create_final_image_element(size)
+                set safe_url to encodeURIComponent(the value of #url_select)
+                set url to `https://cjburkey.com/mah-bb/image.php?size=${size}&process=false&url=${safe_url}`
+
+                make an <img.overlay_image#final_image/> called final_image
+                set final_image's @src to url
+                set final_image's @alt to 'Original Image'
+                return final_image
             end
 
             def make_api_request(size)
