@@ -17,18 +17,21 @@
             html, body {
                 padding: 0;
                 margin: 0;
+                height: 100%;
             }
 
             body {
                 min-width: 100%;
                 width: max-content;
+                display: flex;
+                flex-direction: column;
             }
 
             #wrapper {
+                flex-grow: 1;
+                padding: 1rem;
                 text-align: center;
                 font-family: 'Arial', sans-serif;
-                padding: 1rem;
-                margin: 1rem;
             }
 
             #wrapper > h1 {
@@ -39,6 +42,23 @@
             #wrapper > div {
                 margin-left: auto;
                 margin-right: auto;
+            }
+
+            footer {
+                flex-shrink: 0;
+                padding: 1rem;
+                background-color: #EEEEEE;
+                font-family: 'Arial', sans-serif;
+            }
+
+            footer a {
+                color: #5555FF;
+                text-decoration: none;
+            }
+
+            footer a:hover {
+                color: #0505CC;
+                text-decoration: underline;
             }
 
             #options_dialog {
@@ -63,7 +83,6 @@
             /* Pretty much the only responsive part we really need ¯\_(ツ)_/¯ */
             @media (max-width: 400px) {
                 .input_group label {
-                    font-size: 1rem;
                     text-align: center;
                 }
 
@@ -189,6 +208,16 @@
                 <h3>Your experience awaits...</h3>
             </div>
         </div>
+        <footer>
+            A game for my wife.
+            <br>
+            Made by hand with
+            <a href="https://hyperscript.org/" target="_blank" title="Hyperscript :)">_hyperscript</a>
+            by
+            <a href="https://cjburkey.com" target="_blank" title="My website :)">CJ Burkey</a>
+            <br>
+            Source available on <a href="https://github.com/cjburkey01/mah-bb" target="_blank" title="mah-bb on GitHub">GitHub</a>
+        </footer>
 
         <!--
             Remember to keep this up-to-date when necessary.
