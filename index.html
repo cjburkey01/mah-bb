@@ -115,6 +115,7 @@
             }
 
             #board_grid > .overlay_image {
+                image-rendering: pixelated;
                 object-fit: contain;
                 position: absolute;
                 width: 100%;
@@ -214,9 +215,13 @@
                 hide #loading_dialog
             end
 
+            -- Handle showing the images when the game has been completed
             on game_complete
-                show #final_image with opacity
+                set *pointer-events of #color_image to 'auto'
                 set *pointer-events of #final_image to 'auto'
+                transition #color_image's *opacity to '100%' over 1s
+                wait 1s
+                transition #final_image's *opacity to '100%' over 2s
             end
 
             -- Handle returning to main menu
@@ -243,52 +248,6 @@
 
                 -- TODO: DON'T DO THIS EVERY CHANGE?
                 send check_board to <body/>
-            end
-
-            on check_board
-                -- Check if the row run counts match
-                set size to the value of #size_select
-                set valid to true
-                repeat size times index row
-                    set run to 0
-                    set runs to []
-                    repeat size times index col
-                        if @data-black of the first <.cell[data-row=`${row}`][data-col=`${col}`]/>
-                            increment run
-                        else
-                            if run > 0
-                                append run to runs
-                                set run to 0
-                            end
-                        end
-                    end
-                    if run > 0
-                        append run to runs
-                        set run to 0
-                    end
-
-                    set raw_expected_runs to <.count_label[data-row=`${row}`]/>
-                    set len to raw_expected_runs.length
-
-                    set expected_runs to []
-                    if len > 0
-                        repeat len times index i
-                            set run_count_at to the innerText of the first <.count_label[data-row=`${row}`][data-index=`${i}`]/>
-                            append run_count_at as Int to expected_runs
-                        end
-                    end
-
-                    if not compare_arrays(expected_runs, runs)
-                        log `mismatch on row ${row}`
-                        set valid to false
-                        break
-                    end
-                end
-
-                if valid
-                    log 'game complete'
-                    send game_complete to <body/>
-                end
             end
 
             def compare_arrays(arr1, arr2)
@@ -412,6 +371,12 @@
                     put 'X' into sp
                 end
 
+                -- Pixelated version of the original image
+                set color_image to create_color_image_element(size)
+                put color_image at the end of board_grid_div
+                hide color_image with opacity
+
+                -- The actual original image
                 set final_image to create_final_image_element(size)
                 put final_image at the end of board_grid_div
                 hide final_image with opacity
@@ -419,9 +384,20 @@
                 return game_container
             end
 
+            def create_color_image_element(size)
+                set safe_url to encodeURIComponent(the value of #url_select)
+                set url to `https://cjburkey.com/mah-bb/image.php?size=${size}&process=0&url=${safe_url}`
+
+                make an <img.overlay_image#color_image/> called color_image
+                set color_image's @src to url
+                set color_image's @alt to 'Pixelated Color Image'
+                set color_image's *pointer-events to 'none'
+                return color_image
+            end
+
             def create_final_image_element(size)
                 set safe_url to encodeURIComponent(the value of #url_select)
-                set url to `https://cjburkey.com/mah-bb/image.php?size=${size}&process=false&url=${safe_url}`
+                set url to `https://cjburkey.com/mah-bb/image.php?size=${size}&process=0&scale=0&url=${safe_url}`
 
                 make an <img.overlay_image#final_image/> called final_image
                 set final_image's @src to url
@@ -446,6 +422,88 @@
                 end
 
                 return api_res
+            end
+        </script>
+
+        <!-- Completion checking -->
+        <script type="text/hyperscript">
+            on check_board
+                -- Check if the row run counts match
+                set size to the value of #size_select
+
+                repeat size times index row
+                    set run to 0
+                    set runs to []
+                    repeat size times index col
+                        if @data-black of the first <.cell[data-row=`${row}`][data-col=`${col}`]/>
+                            increment run
+                        else
+                            if run > 0
+                                append run to runs
+                                set run to 0
+                            end
+                        end
+                    end
+                    if run > 0
+                        append run to runs
+                        set run to 0
+                    end
+
+                    set raw_expected_runs to <.count_label[data-row=`${row}`]/>
+                    set len to raw_expected_runs.length
+
+                    set expected_runs to []
+                    if len > 0
+                        repeat len times index i
+                            set run_count_at to the innerText of the first <.count_label[data-row=`${row}`][data-index=`${i}`]/>
+                            append run_count_at as Int to expected_runs
+                        end
+                    end
+
+                    if not compare_arrays(expected_runs, runs)
+                        log `mismatch on row ${row}`
+                        exit
+                    end
+                end
+
+                -- Check if the column run counts match
+                set size to the value of #size_select
+                repeat size times index col
+                    set run to 0
+                    set runs to []
+                    repeat size times index row
+                        if @data-black of the first <.cell[data-row=`${row}`][data-col=`${col}`]/>
+                            increment run
+                        else
+                            if run > 0
+                                append run to runs
+                                set run to 0
+                            end
+                        end
+                    end
+                    if run > 0
+                        append run to runs
+                    end
+
+                    set raw_expected_runs to <.count_label[data-col=`${col}`]/>
+                    set len to raw_expected_runs.length
+
+                    set expected_runs to []
+                    if len > 0
+                        repeat len times index i
+                            set run_count_at to the innerText of the first <.count_label[data-col=`${col}`][data-index=`${i}`]/>
+                            append run_count_at as Int to expected_runs
+                        end
+                    end
+
+                    if not compare_arrays(expected_runs, runs)
+                        log `mismatch on column ${col}`
+                        exit
+                    end
+                end
+
+                log 'game complete'
+                send game_complete to <body/>
             end
         </script>
     </body>
